@@ -1,0 +1,22 @@
+﻿@model UsuarioModel
+
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+@* identificacion
+@Html.TextBoxFor(m=> m.Identificacion, new { @class = "form-control", @required=true }) *@ @* forma de hacerlo mas complicada y de anteriores versiones de razor *@
+<form asp-controller="Home" asp-action="Index"> 
+
+    identificacion
+    <input type="text" asp-for="Identificacion" class="form-control"  required> </form>  @* forma mas facil y moderna de hacerlo en razor*@
+
+    nombre
+    <input type="text" asp-for="Nombre" class="form-control" required>
+
+    edad
+    <input type="text" asp-for"Edad" class="form-control"  required>
+
+    <input type="submit" value="Guardar" class="btn btn-outline-danger" required>
+<form/> 

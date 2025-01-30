@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Makai_WebProject", "Makai_WebProject\Makai_WebProject.csproj", "{11A313A0-7F6A-4F4C-8A2F-2F6CC87C8731}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Makai_APIProject", "Makai_APIProject\Makai_APIProject.csproj", "{44434EF2-7F84-4EC3-9A48-3FF3FB604E9B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{11A313A0-7F6A-4F4C-8A2F-2F6CC87C8731}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11A313A0-7F6A-4F4C-8A2F-2F6CC87C8731}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11A313A0-7F6A-4F4C-8A2F-2F6CC87C8731}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11A313A0-7F6A-4F4C-8A2F-2F6CC87C8731}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44434EF2-7F84-4EC3-9A48-3FF3FB604E9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44434EF2-7F84-4EC3-9A48-3FF3FB604E9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44434EF2-7F84-4EC3-9A48-3FF3FB604E9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44434EF2-7F84-4EC3-9A48-3FF3FB604E9B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

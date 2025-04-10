@@ -21,12 +21,12 @@ namespace Makai_APIProject.Controllers
 
         // consultar productos en el carrito
         [HttpGet]
-        [Route("ConsultarCart")]
-        public async Task<IActionResult> ConsultarCart(int userId)
+        [Route("GetCartItems")]
+        public async Task<IActionResult> GetCartItems(int userId)
         {
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
-                var result = await context.QueryAsync<CartItemModel>("ConsultarCart",
+                var result = await context.QueryAsync<CartItemModel>("GetCartItems",
                     new { UserId = userId },
                     commandType: System.Data.CommandType.StoredProcedure);
 
@@ -47,23 +47,24 @@ namespace Makai_APIProject.Controllers
             }
         }
 
-        //  agregar un producto al carrito
+        //  añadir al carrito
         [HttpPost]
-        [Route("AgregarAlCarrito")]
-        public async Task<IActionResult> AgregarAlCarrito(CartItemModel model)
+        [Route("AddToCart")]
+        public async Task<IActionResult> AddToCart(CartItemModel model)
         {
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
-                model.added_at = DateTime.Now;
-
-                var result = await context.ExecuteAsync("AgregarProductoCarrito",
-                    new { model.user_id, model.product_id, model.quantity, model.added_at },
+                // Se omite el campo added_at, ya que se maneja en el SQL Server (GETDATE())
+                var result = await context.ExecuteAsync("AddToCart",
+                    new { model.user_id, model.product_id, model.quantity },
                     commandType: System.Data.CommandType.StoredProcedure);
 
                 var respuesta = new RespuestaModel();
 
                 if (result > 0)
+                {
                     respuesta.Indicador = true;
+                }
                 else
                 {
                     respuesta.Indicador = false;
@@ -74,14 +75,15 @@ namespace Makai_APIProject.Controllers
             }
         }
 
+
         //  eliminar un producto del carrito
         [HttpDelete]
-        [Route("EliminarProductoCarrito")]
-        public async Task<IActionResult> EliminarProductoCarrito(int cartId)
+        [Route("RemoveFromCart")]
+        public async Task<IActionResult> RemoveFromCart(int cartId)
         {
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
-                var result = await context.ExecuteAsync("EliminarProductoCarrito",
+                var result = await context.ExecuteAsync("RemoveFromCart",
                     new { CartId = cartId },
                     commandType: System.Data.CommandType.StoredProcedure);
 

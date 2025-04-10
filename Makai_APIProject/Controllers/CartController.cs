@@ -20,64 +20,37 @@ namespace Makai_APIProject.Controllers
             _configuration = configuration;
         }
 
-        // consultar productos en el carrito
-        [HttpGet]
-        [Route("GetCartItems")]
-        public async Task<IActionResult> GetCartItems(int userId)
-        {
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
-            {
-                var result = await context.QueryAsync<CartItemModel>("GetCartItems",
-                    new { UserId = userId },
-                    commandType: System.Data.CommandType.StoredProcedure);
+        #region añadir un producto al carrito
 
-                var respuesta = new RespuestaModel();
-
-                if (result != null)
-                {
-                    respuesta.Indicador = true;
-                    respuesta.Datos = result;
-                }
-                else
-                {
-                    respuesta.Indicador = false;
-                    respuesta.Mensaje = "No hay productos en el carrito";
-                }
-
-                return Ok(respuesta);
-            }
-        }
-
-        //  añadir un producto al carrito
         [HttpPost]
         [Route("AddToCart")]
         public async Task<IActionResult> AddToCart(CartItemModel model)
         {
             using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
             {
-                // Crear un objeto DynamicParameters para manejar los parámetros de la consulta
+
                 var parameters = new DynamicParameters();
                 parameters.Add("user_id", model.user_id);
                 parameters.Add("product_id", model.product_id);
                 parameters.Add("quantity", model.quantity);
 
-                // Definir el parámetro de salida para el mensaje
+
                 parameters.Add("message", dbType: DbType.String, size: 255, direction: ParameterDirection.Output);
 
-                // Ejecutar el procedimiento almacenado
+
                 await context.ExecuteAsync(
                     "AddToCart", // Nombre del procedimiento
                     parameters,  // Parámetros de entrada y salida
                     commandType: CommandType.StoredProcedure
                 );
 
-                // Crear la respuesta con el valor del mensaje
+
                 var respuesta = new RespuestaModel
                 {
-                    Mensaje = parameters.Get<string>("message") // Obtener el mensaje de salida
+                    Mensaje = parameters.Get<string>("message")
                 };
 
-                // Verificar el mensaje para determinar si la operación fue exitosa
+
                 if (!string.IsNullOrEmpty(respuesta.Mensaje))
                 {
                     respuesta.Indicador = true;
@@ -93,94 +66,194 @@ namespace Makai_APIProject.Controllers
                     respuesta.Datos = null;
                 }
 
-                // Devolver la respuesta en formato JSON
+                // json
                 return Ok(respuesta);
             }
         }
+        #endregion
 
+        #region actualizar cantidad de producto
 
-
-        //  eliminar un producto del carrito
-        [HttpDelete]
-        [Route("RemoveFromCart")]
-        public async Task<IActionResult> RemoveFromCart(int cartId)
+        [HttpPut]
+        [Route("UpdateCartQuantity")]
+        public async Task<IActionResult> UpdateCartQuantity(int cart_id, int quantity)
         {
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
-            {
-                // Definir los parámetros para el procedimiento almacenado
-                var parameters = new DynamicParameters();
-                parameters.Add("cart_id", cartId);
+            var respuesta = new RespuestaModel();
 
-                try
+            try
+            {
+                using (var connection = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
                 {
-                    // Ejecutar el procedimiento almacenado
-                    var result = await context.ExecuteAsync(
-                        "RemoveFromCart", // Procedimiento almacenado
-                        parameters,       // Parámetros de entrada
+                    var result = await connection.ExecuteAsync(
+                        "UpdateCartQuantity",
+                        new { cart_id, quantity },
                         commandType: CommandType.StoredProcedure
                     );
 
-                    // Crear el objeto de respuesta
-                    var respuesta = new RespuestaModel
-                    {
-                        Indicador = result > 0, // Si hay filas afectadas, el indicador será true
-                        Mensaje = result > 0 ? "Producto eliminado del carrito correctamente." : "No se encontró el producto para eliminar.",
-                        Datos = new { CartId = cartId }
-                    };
+                    respuesta.Indicador = true;
+                    respuesta.Mensaje = quantity <= 0
+                        ? "Producto eliminado del carrito."
+                        : "Cantidad actualizada en el carrito.";
+                    respuesta.Datos = new { cart_id, quantity };
 
-                    // Devolver la respuesta
                     return Ok(respuesta);
                 }
-                catch (Exception ex)
-                {
-                    // Manejar cualquier error que ocurra durante la ejecución
-                    return StatusCode(500, new RespuestaModel
-                    {
-                        Indicador = false,
-                        Mensaje = $"Error interno del servidor: {ex.Message}"
-                    });
-                }
+            }
+            catch (Exception ex)
+            {
+                respuesta.Indicador = false;
+                respuesta.Mensaje = $"Error interno del servidor: {ex.Message}";
+                respuesta.Datos = null;
+                return StatusCode(500, respuesta);
             }
         }
+        #endregion
 
+        #region eliminar un producto del carrito
 
-
-
-
-
-
-        // limpiar carrito
         [HttpDelete]
-        [Route("ClearCart")]
-        public async Task<IActionResult> ClearCart(int userId)
+        [Route("RemoveFromCart")]
+        public async Task<IActionResult> RemoveFromCart(int cart_id)
         {
-            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            var respuesta = new RespuestaModel();
+
+            try
             {
-                // Ejecutar el procedimiento ClearCart para vaciar el carrito de un usuario
-                var result = await context.ExecuteAsync(
-                    "ClearCart", // Procedimiento para vaciar el carrito
-                    new { UserId = userId }, // Parámetro para vaciar el carrito de un usuario específico
-                    commandType: CommandType.StoredProcedure
-                );
-
-                var respuesta = new RespuestaModel();
-
-                if (result > 0)
+                using (var connection = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
                 {
-                    respuesta.Indicador = true;
-                    respuesta.Mensaje = "Carrito vacío con éxito.";
-                }
-                else
-                {
-                    respuesta.Indicador = false;
-                    respuesta.Mensaje = "No se pudo vaciar el carrito.";
+                    await connection.OpenAsync();
+
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            await connection.ExecuteAsync(
+                                "RemoveFromCart",
+                                new { cart_id },
+                                commandType: CommandType.StoredProcedure,
+                                transaction: transaction
+                            );
+
+                            transaction.Commit();
+
+                            respuesta.Indicador = true;
+                            respuesta.Mensaje = "Producto eliminado del carrito correctamente.";
+                            respuesta.Datos = new { cart_id };
+                        }
+                        catch (SqlException ex) when (ex.Number == 50000)
+                        {
+                            transaction.Rollback();
+
+                            respuesta.Indicador = false;
+                            respuesta.Mensaje = ex.Message;
+                            respuesta.Datos = new { cart_id };
+
+                            return NotFound(respuesta);
+                        }
+                    }
                 }
 
                 return Ok(respuesta);
             }
+            catch (Exception ex)
+            {
+                respuesta.Indicador = false;
+                respuesta.Mensaje = $"Error interno del servidor: {ex.Message}";
+                respuesta.Datos = null;
+                return StatusCode(500, respuesta);
+            }
         }
+        #endregion
 
-        //  crear una nueva orden
+        #region limpiar carrito
+
+        [HttpDelete("ClearCart")]
+        public async Task<ActionResult<RespuestaModel>> ClearCart(int userId)
+        {
+            var respuesta = new RespuestaModel();
+            try
+            {
+                // Obtener la cadena de conexión desde appsettings.json
+                var connectionString = _configuration.GetSection("ConnectionStrings:BDConnection").Value;
+
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    // Definir los parámetros para el procedimiento almacenado
+                    var parameters = new { user_id = userId };
+
+                    // Ejecutar el procedimiento almacenado
+                    var result = await connection.ExecuteAsync("ClearCart", parameters, commandType: CommandType.StoredProcedure);
+
+                    if (result > 0)
+                    {
+                        respuesta.Indicador = true;
+                        respuesta.Mensaje = "Carrito limpiado con éxito.";
+                    }
+                    else
+                    {
+                        respuesta.Indicador = false;
+                        respuesta.Mensaje = "No se encontraron elementos en el carrito para el usuario.";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                respuesta.Indicador = false;
+                respuesta.Mensaje = $"Error al procesar la solicitud: {ex.Message}";
+            }
+
+            return Ok(respuesta);
+        }
+        #endregion
+
+        #region detalle de productos en el carrito
+
+        [HttpGet]
+        [Route("GetCartItems")]
+        public async Task<IActionResult> GetCartItems(int user_id)
+        {
+            var respuesta = new RespuestaModel();
+
+            try
+            {
+                using (var connection = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+                {
+                    var cartItems = await connection.QueryAsync(
+                        "GetCartItems",
+                        new { user_id },
+                        commandType: CommandType.StoredProcedure
+                    );
+
+                    if (cartItems.Any())
+                    {
+                        respuesta.Indicador = true;
+                        respuesta.Mensaje = "Productos encontrados en el carrito.";
+                        respuesta.Datos = cartItems;
+                    }
+                    else
+                    {
+                        respuesta.Indicador = false;
+                        respuesta.Mensaje = "El carrito está vacío.";
+                        respuesta.Datos = null;
+                    }
+
+                    return Ok(respuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                respuesta.Indicador = false;
+                respuesta.Mensaje = $"Error interno del servidor: {ex.Message}";
+                respuesta.Datos = null;
+                return StatusCode(500, respuesta);
+            }
+        }
+        #endregion
+
+        #region crear una nueva orden
+
         [HttpPost]
         [Route("CrearOrden")]
         public async Task<IActionResult> CrearOrden(OrdersModel model)
@@ -206,5 +279,6 @@ namespace Makai_APIProject.Controllers
                 return Ok(respuesta);
             }
         }
+        #endregion
     }
 }

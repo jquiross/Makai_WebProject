@@ -6,6 +6,7 @@ using Dapper;
 using Makai_APIProject.Models;
 using System;
 using Microsoft.Data.SqlClient;
+using System.Data;
 
 
 namespace Makai_APIProject.Controllers
@@ -21,91 +22,96 @@ namespace Makai_APIProject.Controllers
             _configuration = configuration;
         }
 
-        // GET
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Inventory>>> Get()
-        {
-            using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-
-            var query = "SELECT inventory_id, product_id, stock, last_updated FROM Inventory";
-            var result = await connection.QueryAsync<Inventory>(query);
-
-            return Ok(result);
-        }
-
-        // GET
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Inventory>> Get(int id)
-        {
-            using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-
-            var query = "SELECT inventory_id, product_id, stock, last_updated FROM Inventory WHERE inventory_id = @Id";
-            var result = await connection.QuerySingleOrDefaultAsync<Inventory>(query, new { Id = id });
-
-            if (result == null)
-                return NotFound();
-
-            return Ok(result);
-        }
-
-        // POST
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] Inventory inventory)
+        [Route("IngresarInventario")]
+        public IActionResult IngresarInventario(Inventory model)
         {
-            using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            {
+                var result = context.Execute("IngresarInventario",
+                    new { model.Category_id, model.Name, model.Description, model.Price, model.Stock_quantity, model.Created_at, model.Image_url });
 
-            
-            var query = @"
-                INSERT INTO Inventory (product_id, stock)
-                VALUES (@product_id, @stock);
-                SELECT CAST(SCOPE_IDENTITY() as int);
-            ";
+                var respuesta = new RespuestaModel();
 
-            
-            var newId = await connection.ExecuteScalarAsync<int>(query, inventory);
-            inventory.inventory_id = newId;
+                if (result > 0)
+                    respuesta.Indicador = true;
+                else
+                {
+                    respuesta.Indicador = false;
+                    respuesta.Mensaje = "Su información no se ha registrado correctamente";
+                }
 
-            return CreatedAtAction(nameof(Get), new { id = newId }, inventory);
+                return Ok(respuesta);
+            }
         }
 
-        // PUT
-        [HttpPut("{id}")]
-        public async Task<ActionResult> Put(int id, [FromBody] Inventory inventory)
+
+        [HttpGet]
+        [Route("ObtenerInventario")]
+        public IActionResult ObtenerInventario()
         {
-            if (id != inventory.inventory_id)
-                return BadRequest("El ID de la ruta no coincide con el ID del objeto.");
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            {
+                var result = context.Query<Inventory>(
+                    "ObtenerInventario",
+                    commandType: CommandType.StoredProcedure
+                ).ToList();
 
-            using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
 
-           
-            var query = @"
-                UPDATE Inventory
-                SET product_id = @product_id,
-                    stock = @stock,
-                    last_updated = GETDATE()
-                WHERE inventory_id = @inventory_id
-            ";
+              
 
-            var rowsAffected = await connection.ExecuteAsync(query, inventory);
-            if (rowsAffected == 0)
-                return NotFound();
-
-            return NoContent();
+                return Ok(result);
+            }
         }
 
-        // DELETE =borrar 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id)
+        [HttpDelete]
+        [Route("EliminarProducto")]
+        public IActionResult EliminarProducto(Inventory model)
         {
-            using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            {
+                var result = context.Execute(
+                    "EliminarProducto", new { model.Product_id });
 
-            var query = "DELETE FROM Inventory WHERE inventory_id = @Id";
-            var rowsAffected = await connection.ExecuteAsync(query, new { Id = id });
 
-            if (rowsAffected == 0)
-                return NotFound();
+                var respuesta = new RespuestaModel();
 
-            return NoContent();
+                if (result > 0)
+                    respuesta.Indicador = true;
+                else
+                {
+                    respuesta.Indicador = false;
+                    respuesta.Mensaje = "Exito";
+                }
+
+                return Ok(respuesta);
+            }
         }
+
+        [HttpPut]
+        [Route("EditarInventario")]
+        public IActionResult EditarInventario(Inventory model)
+        {
+            using (var context = new SqlConnection(_configuration.GetSection("ConnectionStrings:BDConnection").Value))
+            {
+                var result = context.Execute(
+                    "EditarInventario", new { model.Product_id,model.Category_id, model.Name, model.Description, model.Price, model.Stock_quantity, model.Created_at, model.Image_url });
+
+
+                var respuesta = new RespuestaModel();
+
+                if (result > 0)
+                    respuesta.Indicador = true;
+                else
+                {
+                    respuesta.Indicador = false;
+                    respuesta.Mensaje = "Exito";
+                }
+
+                return Ok(respuesta);
+            }
+        }
+
+
     }
 }

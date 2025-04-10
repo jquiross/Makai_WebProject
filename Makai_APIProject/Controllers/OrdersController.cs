@@ -6,6 +6,7 @@ using Microsoft.Data.SqlClient;
 
 namespace Makai_APIProject.Controllers
 {
+    // [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class OrdersController : Controller

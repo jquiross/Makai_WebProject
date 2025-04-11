@@ -1,0 +1,63 @@
+﻿@model List<Makai_WebProject.Models.ProductInventoryViewModel>
+
+@{
+    ViewData["Title"] = "Gestor de Productos";
+}
+
+<div class="container my-5">
+    <h1 class="mb-4 text-center">Gestor de Productos</h1>
+
+    <!-- Campo de búsqueda (opcional) -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <form class="d-flex" method="get" asp-controller="Products" asp-action="Index">
+                <input class="form-control me-2" type="search" name="search" placeholder="Buscar productos por ID" />
+                <button class="btn btn-outline-primary" type="submit">Buscar</button>
+            </form>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            <a class="btn btn-primary" asp-action="Create">
+                <i class="bi bi-plus-lg"></i> Agregar Producto
+            </a>
+        </div>
+    </div>
+
+    <!-- Tabla de productos -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID Inventario</th>
+                    <th>ID Producto</th>
+                    <th>Stock</th>
+                    <th>Última Actualización</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.inventory_id</td>
+                        <td>@item.product_id</td>
+                        <td>@item.stock</td>
+                        <td>
+                            @(item.last_updated.HasValue ? item.last_updated.Value.ToString("g") : "")
+                        </td>
+                        <td class="text-center">
+                            <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.inventory_id">
+                                <i class="bi bi-info-circle"></i> Detalles
+                            </a>
+                            <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.inventory_id">
+                                <i class="bi bi-pencil-square"></i> Editar
+                            </a>
+                            <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@item.inventory_id">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

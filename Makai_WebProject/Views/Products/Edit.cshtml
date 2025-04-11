@@ -1,0 +1,32 @@
+﻿@model Makai_WebProject.Models.ProductInventoryViewModel
+
+@{
+    ViewData["Title"] = "Editar Producto";
+}
+
+<div class="container my-5">
+    <h1 class="mb-4">Editar Producto</h1>
+
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="inventory_id" />
+        <div class="mb-3">
+            <label asp-for="product_id" class="form-label">ID Producto</label>
+            <input asp-for="product_id" class="form-control" />
+            <span asp-validation-for="product_id" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="stock" class="form-label">Stock</label>
+            <input asp-for="stock" class="form-control" />
+            <span asp-validation-for="stock" class="text-danger"></span>
+        </div>
+        <!-- Agrega más campos si es necesario -->
+        <button type="submit" class="btn btn-primary">Actualizar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

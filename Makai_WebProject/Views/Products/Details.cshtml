@@ -1,0 +1,27 @@
+﻿@model Makai_WebProject.Models.ProductInventoryViewModel
+
+@{
+    ViewData["Title"] = "Detalles del Producto";
+}
+
+<div class="container my-5">
+    <h1 class="mb-4">Detalles del Producto</h1>
+
+    <dl class="row">
+        <dt class="col-sm-3">ID Inventario</dt>
+        <dd class="col-sm-9">@Model.inventory_id</dd>
+
+        <dt class="col-sm-3">ID Producto</dt>
+        <dd class="col-sm-9">@Model.product_id</dd>
+
+        <dt class="col-sm-3">Stock</dt>
+        <dd class="col-sm-9">@Model.stock</dd>
+
+        <dt class="col-sm-3">Última Actualización</dt>
+        <dd class="col-sm-9">
+            @(Model.last_updated.HasValue ? Model.last_updated.Value.ToString("g") : "")
+        </dd>
+    </dl>
+
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</div>

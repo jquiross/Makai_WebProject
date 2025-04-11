@@ -24,4 +24,11 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Login}/{action=IniciarSesion}/{id?}");
 
+app.MapControllerRoute(
+    name: "menu",
+    pattern: "menu.html",
+    defaults: new { controller = "Products", action = "Index" }
+);
+
+
 app.Run();

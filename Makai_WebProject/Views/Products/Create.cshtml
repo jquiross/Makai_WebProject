@@ -1,0 +1,34 @@
+﻿@model Makai_WebProject.Models.ProductInventoryViewModel
+
+@{
+    ViewData["Title"] = "Crear Producto";
+}
+
+<div class="container my-5">
+    <h1 class="mb-4">Crear Producto</h1>
+
+    <form asp-action="Create" method="post">
+        <div class="mb-3">
+            <label asp-for="product_id" class="form-label">ID Producto</label>
+            <!-- Si el API requiere que el usuario ingrese el product_id, déjalo editable;
+                 si se asigna automáticamente, podrías omitirlo -->
+            <input asp-for="product_id" class="form-control" placeholder="Ingrese el ID del producto" />
+            <span asp-validation-for="product_id" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="stock" class="form-label">Stock</label>
+            <input asp-for="stock" class="form-control" />
+            <span asp-validation-for="stock" class="text-danger"></span>
+        </div>
+        <!-- Si en el futuro el API incluye más campos, agrégalos aquí -->
+
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

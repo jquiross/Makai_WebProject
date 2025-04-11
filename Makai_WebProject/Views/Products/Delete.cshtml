@@ -1,0 +1,31 @@
+﻿@model Makai_WebProject.Models.ProductInventoryViewModel
+
+@{
+    ViewData["Title"] = "Eliminar Producto";
+}
+
+<div class="container my-5">
+    <h1 class="mb-4">Eliminar Producto</h1>
+
+    <div class="alert alert-warning">
+        <h4 class="alert-heading">Confirmación</h4>
+        <p>¿Está seguro que desea eliminar el siguiente producto?</p>
+    </div>
+
+    <dl class="row">
+        <dt class="col-sm-3">ID Inventario</dt>
+        <dd class="col-sm-9">@Model.inventory_id</dd>
+
+        <dt class="col-sm-3">ID Producto</dt>
+        <dd class="col-sm-9">@Model.product_id</dd>
+
+        <dt class="col-sm-3">Stock</dt>
+        <dd class="col-sm-9">@Model.stock</dd>
+    </dl>
+
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="inventory_id" />
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
